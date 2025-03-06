@@ -16,6 +16,9 @@ export const Row: React.FC<RowProps> = ({ letters, onDelete }) => {
       {onDelete && (
         <button
           onClick={onDelete}
+          style={{
+            transform: 'translateX(-22px)',
+          }}
           className='absolute -right-8 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white'
         >
           <svg
