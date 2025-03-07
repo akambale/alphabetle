@@ -1,6 +1,7 @@
-import React, { useEffect, useCallback } from 'react';
-import { LetterDisplayMetadata } from '@/types';
+import React, { useEffect, useCallback, useState } from 'react';
+import { AlertModal } from './AlertModal';
 import { words } from '@/words';
+import type { LetterDisplayMetadata } from '@/types';
 
 const KEYS = [
   ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'],
@@ -36,8 +37,18 @@ export const Keyboard: React.FC<KeyboardProps> = ({
   setInput,
   grid,
 }) => {
+  const [alertMsg, setAlertMsg] = useState('');
+
   function handleKeyClick(key: string) {
     handleKeyAction(key);
+  }
+
+  function showAlert(message: string) {
+    setAlertMsg(message);
+
+    setTimeout(() => {
+      setAlertMsg('');
+    }, 1500);
   }
 
   const handleKeyAction = useCallback(
@@ -46,11 +57,11 @@ export const Keyboard: React.FC<KeyboardProps> = ({
 
       if (key === 'ENTER') {
         if (input.length !== 5) {
-          alert('Enter a 5 letter word');
+          showAlert('Not enough letters');
           return;
         }
         if (!words.has(input.toLowerCase())) {
-          alert('Not a valid word');
+          showAlert('Not in word list');
           return;
         }
         setGrid(oldGrid => {
@@ -66,9 +77,8 @@ export const Keyboard: React.FC<KeyboardProps> = ({
         setInput(input.slice(0, -1));
       }
 
-      if (input.length === 5) {
-        return;
-      }
+      // If the user has already entered 5 letters, don't allow them to enter any more
+      if (input.length === 5) return;
 
       if (key.length === 1) {
         setInput(input + key);
@@ -99,14 +109,15 @@ export const Keyboard: React.FC<KeyboardProps> = ({
   }, [input, handleKeyAction]);
 
   return (
-    <div className='mt-8'>
-      {KEYS.map((row, rowIndex) => (
-        <div key={rowIndex} className='flex justify-center gap-1 mb-2'>
-          {row.map((key, keyIndex) => (
-            <button
-              key={keyIndex}
-              onClick={() => handleKeyClick(key)}
-              className={`
+    <>
+      <div className='mt-8'>
+        {KEYS.map((row, rowIndex) => (
+          <div key={rowIndex} className='flex justify-center gap-1 mb-2'>
+            {row.map((key, keyIndex) => (
+              <button
+                key={keyIndex}
+                onClick={() => handleKeyClick(key)}
+                className={`
                 flex items-center justify-center rounded font-bold cursor-pointer select-none text-white
                 ${
                   key === 'ENTER' || key === 'DELETE'
@@ -114,18 +125,20 @@ export const Keyboard: React.FC<KeyboardProps> = ({
                     : 'h-14 w-14'
                 }
               `}
-              style={{
-                backgroundColor:
-                  key === 'ENTER' || key === 'DELETE'
-                    ? '#818384'
-                    : getKeyColor(key, grid),
-              }}
-            >
-              {key}
-            </button>
-          ))}
-        </div>
-      ))}
-    </div>
+                style={{
+                  backgroundColor:
+                    key === 'ENTER' || key === 'DELETE'
+                      ? '#818384'
+                      : getKeyColor(key, grid),
+                }}
+              >
+                {key}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+      <AlertModal message={alertMsg} />
+    </>
   );
 };
